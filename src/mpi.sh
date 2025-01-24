@@ -8,4 +8,4 @@ if [ $? -ne 0 ]; then
 fi
 
 # Run the MPI program with 4 processes
-mpiexec -n 4 ./task_a
+mpirun --map-by :OVERSUBSCRIBE -np 9 ./task_a
