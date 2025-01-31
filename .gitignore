@@ -1,0 +1,5 @@
+/bin
+!*.c
+!*.sh
+EduMPI.AppImage
+/src/!*.c
