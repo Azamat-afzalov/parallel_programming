@@ -5,9 +5,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+// Matrix Size  Num Process   Grid size
+// 800           64              100
+// 798           361             42
+// 2000          64              250
+// 1995          361   
+// 4000          64              500
+// 4009          361
+// 6000          64              750
+// 6004          361  
+// 7995          225
+// 7999          361
 
-#define MATRIX_SIZE 16   
-#define GRID_SIZE 4     
+
+#define MATRIX_SIZE 800  // 64 processes   
+#define GRID_SIZE 100      
 #define BLOCK_SIZE (MATRIX_SIZE/GRID_SIZE)
 #define PRINT false
 
@@ -69,10 +81,10 @@ int main(int argc, char **argv) {
         // Initialize matrices with random values
         srand(time(NULL));
         for (int i = 0; i < MATRIX_SIZE * MATRIX_SIZE; i++) {
-            // A[i] = rand() % 10;
-            // B[i] = rand() % 10;
-            A[i] = i;
-            B[i] = i;
+            A[i] = rand() % 10;
+            B[i] = rand() % 10;
+            // A[i] = i;
+            // B[i] = i;
         }
 
         print_matrix(A, MATRIX_SIZE * MATRIX_SIZE, "Matrix A");
@@ -86,6 +98,8 @@ int main(int argc, char **argv) {
     MPI_Type_vector(BLOCK_SIZE, BLOCK_SIZE, MATRIX_SIZE, MPI_INT, &temp_type);
     MPI_Type_create_resized(temp_type, 0, sizeof(int), &block_type);
     MPI_Type_commit(&block_type);
+
+    double startTime = MPI_Wtime();
 
     // Calculate send counts and displacements for scattering blocks
     int *sendcounts = NULL, *displs = NULL;
@@ -108,6 +122,7 @@ int main(int argc, char **argv) {
     MPI_Comm row_comm;
     MPI_Comm_split(cart_comm, coords[0], coords[1], &row_comm);
 
+    // Main alghoritm code
     for (int stage = 0; stage < GRID_SIZE; stage++) {
         int bcast_coord = (coords[0] + stage) % GRID_SIZE;
         
@@ -128,11 +143,12 @@ int main(int argc, char **argv) {
 
     // Gather results
     MPI_Gatherv(local_C, block_elements, MPI_INT, C, sendcounts, displs, block_type, 0, cart_comm);
+    double endTime = MPI_Wtime();
 
     // Print result
     if (rank == 0) {
         print_matrix(C, MATRIX_SIZE * MATRIX_SIZE, "Result Matrix C");
-        
+        printf("Total time: %lf", endTime - startTime);
         free(A);
         free(B);
         free(C);
