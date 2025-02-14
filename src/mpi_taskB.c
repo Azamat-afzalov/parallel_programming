@@ -48,7 +48,6 @@ int main(int argc, char **argv) {
     MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, 1, &cart_comm);
     MPI_Cart_coords(cart_comm, rank, 2, coords);
 
-    // Allocate memory for local blocks
     int block_elements = BLOCK_SIZE * BLOCK_SIZE;
     int *local_A = (int *)calloc(block_elements, sizeof(int));
     int *local_B = (int *)calloc(block_elements, sizeof(int));
@@ -97,19 +96,13 @@ int main(int argc, char **argv) {
         }
     }
 
-    // Scatter blocks of matrices A and B
-    MPI_Scatterv(A, sendcounts, displs, block_type,
-                 local_A, block_elements, MPI_INT,
-                 0, cart_comm);
-    MPI_Scatterv(B, sendcounts, displs, block_type,
-                 local_B, block_elements, MPI_INT,
-                 0, cart_comm);
+    MPI_Scatterv(A, sendcounts, displs, block_type, local_A, block_elements, MPI_INT, 0, cart_comm);
+    MPI_Scatterv(B, sendcounts, displs, block_type, local_B, block_elements, MPI_INT, 0, cart_comm);
 
     // Create row communicator
     MPI_Comm row_comm;
     MPI_Comm_split(cart_comm, coords[0], coords[1], &row_comm);
 
-    // Main Fox algorithm
     for (int stage = 0; stage < GRID_SIZE; stage++) {
         int bcast_coord = (coords[0] + stage) % GRID_SIZE;
         
@@ -125,15 +118,11 @@ int main(int argc, char **argv) {
         // Shift B blocks up by one
         int src, dest;
         MPI_Cart_shift(cart_comm, 0, -1, &src, &dest);
-        MPI_Sendrecv_replace(local_B, block_elements, MPI_INT,
-                            dest, 0, src, 0,
-                            cart_comm, MPI_STATUS_IGNORE);
+        MPI_Sendrecv_replace(local_B, block_elements, MPI_INT, dest, 0, src, 0, cart_comm, MPI_STATUS_IGNORE);
     }
 
     // Gather results
-    MPI_Gatherv(local_C, block_elements, MPI_INT,
-                C, sendcounts, displs, block_type,
-                0, cart_comm);
+    MPI_Gatherv(local_C, block_elements, MPI_INT, C, sendcounts, displs, block_type, 0, cart_comm);
 
     // Print result
     if (rank == 0) {
