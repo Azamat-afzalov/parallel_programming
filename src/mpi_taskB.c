@@ -4,20 +4,25 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
-#define MATRIX_SIZE 4   
-#define GRID_SIZE 2     
+#define MATRIX_SIZE 16   
+#define GRID_SIZE 4     
 #define BLOCK_SIZE (MATRIX_SIZE/GRID_SIZE)
+#define PRINT false
 
 void print_matrix(const int *matrix, int size, const char *matrix_name) {
-    printf("%s:\n", matrix_name);
-    for (int i = 0; i < size; i++) {
-        printf("%d ", matrix[i]);
-        if ((i + 1) % MATRIX_SIZE == 0) {
-            printf("\n");
+    if (PRINT) {
+        printf("%s:\n", matrix_name);
+        for (int i = 0; i < size; i++) {
+            printf("%d ", matrix[i]);
+            if ((i + 1) % MATRIX_SIZE == 0) {
+                printf("\n");
+            }
         }
+        printf("\n");
     }
-    printf("\n");
+   
 }
 
 // Function to multiply two block matrices
