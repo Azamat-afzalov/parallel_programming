@@ -5,7 +5,7 @@
 #SBATCH --output=test_result.log                                                                                        
 #SBATCH --time=00:10:00                                                                                                                                                                                                                                                                                                                                                 
 SOURCE_FILE="mpi_taskB.c"                                                                                                                                                                                                                          
-EXECUTABLE="mpi_taskB"
+EXECUTABLE="mpi_task_b"
 
 echo "(800 - 64): \n"
 mpicc -o $EXECUTABLE -D MATRIX_SIZE=800 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
