@@ -8,7 +8,7 @@ SOURCE_FILE="mpi_taskB.c"
 EXECUTABLE="mpi_task_b"
 
 echo "(800 - 64): \n"
-mpicc -o $EXECUTABLE -D MATRIX_SIZE=800 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
+mpicc -o $EXECUTABLE -D MATRIX_SIZE=800 -D PRINT=false $SOURCE_FILE -lm                                                                                                                                                                          
 mpirun -np 64 ./$EXECUTABLE
 echo "\n"
 # echo "(800 - 361): \n"
