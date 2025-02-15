@@ -2,22 +2,32 @@
 #SBATCH --partition=all
 #SBATCH --ntasks=361
 #SBATCH --job-name=my_job_name
-#SBATCH --output=test_result.log
+#SBATCH --output=test_result_%A_%a.log
 #SBATCH --time=00:10:00
+#SBATCH --array=1-10
 
 SOURCE_FILE="mpi_taskB.c"
 
-# Define an array of MATRIX_SIZE values
-MATRIX_SIZES=(800 2000 4000 6000 8000)
-NUM_PROCESSES=(64 361)
+# Define an array of configurations
+CONFIGS=(
+    "800 64"
+    "800 361"
+    "2000 64"
+    "2000 361"
+    "4000 64"
+    "4000 361"
+    "6000 64"
+    "6000 361"
+    "8000 64"
+    "8000 361"
+)
 
-for SIZE in "${MATRIX_SIZES[@]}"; do
-    for NP in "${NUM_PROCESSES[@]}"; do
-        EXECUTABLE="mpi_taskB_${SIZE}_${NP}"
-        
-        echo "Running (MATRIX_SIZE=$SIZE - np=$NP)"
-        mpicc -o $EXECUTABLE -D MATRIX_SIZE=$SIZE -D PRINT=false $SOURCE_FILE
-        mpirun -np $NP ./$EXECUTABLE
-        echo "\n"
-    done
-done
+# Extract MATRIX_SIZE and NUM_PROCESSES from the array using SLURM_ARRAY_TASK_ID
+CONFIG="${CONFIGS[$SLURM_ARRAY_TASK_ID - 1]}"
+read MATRIX_SIZE NUM_PROCESSES <<< "$CONFIG"
+
+EXECUTABLE="mpi_taskB_${MATRIX_SIZE}_${NUM_PROCESSES}"
+
+echo "Running (MATRIX_SIZE=$MATRIX_SIZE - np=$NUM_PROCESSES)"
+mpicc -o $EXECUTABLE -D MATRIX_SIZE=$MATRIX_SIZE -D PRINT=false $SOURCE_FILE
+mpirun -np $NUM_PROCESSES ./$EXECUTABLE
