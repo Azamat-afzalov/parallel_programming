@@ -1,52 +1,23 @@
 #!/usr/bin/env bash
 #SBATCH --partition=all
-#SBATCH --ntasks=216
-#SBATCH --job-name=my_job_name                                                                                          
-#SBATCH --output=test_result.log                                                                                        
-#SBATCH --time=00:10:00                                                                                                                                                                                                                                                                                                                                                 
-SOURCE_FILE="mpi_taskB.c"                                                                                                                                                                                                                          
-EXECUTABLE="mpi_taskB"
+#SBATCH --ntasks=361
+#SBATCH --job-name=my_job_name
+#SBATCH --output=test_result.log
+#SBATCH --time=00:10:00
 
-echo "(800 - 64): \n"
-mpicc -o $EXECUTABLE -D MATRIX_SIZE=800 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
-mpirun -np 64 ./$EXECUTABLE
-echo "\n"
-echo "(800 - 361): \n"
-mpicc -o $EXECUTABLE -D MATRIX_SIZE=800 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
-mpirun -np 361 ./$EXECUTABLE
-echo "\n"
-echo "(2000 - 64): \n"
-mpicc -o $EXECUTABLE -D MATRIX_SIZE=2000 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
-mpirun -np 64 ./$EXECUTABLE
-echo "\n"
-echo "(2000 - 361): \n"
-mpicc -o $EXECUTABLE -D MATRIX_SIZE=2000 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
-mpirun -np 361 ./$EXECUTABLE
-echo "\n"
-echo "(4000 - 64): \n"
-mpicc -o $EXECUTABLE -D MATRIX_SIZE=4000 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
-mpirun -np 64 ./$EXECUTABLE
-echo "\n"
-echo "(4000 - 361): \n"
-mpicc -o $EXECUTABLE -D MATRIX_SIZE=4000 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
-mpirun -np 361 ./$EXECUTABLE
-echo "\n"
-echo "(6000 - 64): \n"
-mpicc -o $EXECUTABLE -D MATRIX_SIZE=6000 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
-mpirun -np 64 ./$EXECUTABLE
-echo "\n"
-echo "(6000 - 361): \n"
-mpicc -o $EXECUTABLE -D MATRIX_SIZE=6000 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
-mpirun -np 361 ./$EXECUTABLE
-echo "\n"
+SOURCE_FILE="mpi_taskB.c"
 
-echo "(8000 - 64): \n"
-mpicc -o $EXECUTABLE -D MATRIX_SIZE=8000 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
-mpirun -np 64 ./$EXECUTABLE
-echo "\n"
-echo "(8000 - 361): \n"
-mpicc -o $EXECUTABLE -D MATRIX_SIZE=8000 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
-mpirun -np 361 ./$EXECUTABLE
-echo "\n"
+# Define an array of MATRIX_SIZE values
+MATRIX_SIZES=(800 2000 4000 6000 8000)
+NUM_PROCESSES=(64 361)
 
-
+for SIZE in "${MATRIX_SIZES[@]}"; do
+    for NP in "${NUM_PROCESSES[@]}"; do
+        EXECUTABLE="mpi_taskB_${SIZE}_${NP}"
+        
+        echo "Running (MATRIX_SIZE=$SIZE - np=$NP)"
+        mpicc -o $EXECUTABLE -D MATRIX_SIZE=$SIZE -D PRINT=false $SOURCE_FILE
+        mpirun -np $NP ./$EXECUTABLE
+        echo "\n"
+    done
+done
