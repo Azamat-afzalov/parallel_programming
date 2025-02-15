@@ -17,11 +17,12 @@
 // 7995          225
 // 7999          361
 
-
-#define MATRIX_SIZE 800  // 64 processes   
-#define GRID_SIZE 100      
-#define BLOCK_SIZE (MATRIX_SIZE/GRID_SIZE)
-#define PRINT false
+#ifndef MATRIX_SIZE
+    #define MATRIX_SIZE 800
+#endif
+#ifndef PRINT
+    #define PRINT false
+#endif
 
 void print_matrix(const int *matrix, int size, const char *matrix_name) {
     if (PRINT) {
@@ -56,8 +57,11 @@ int main(int argc, char **argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+    int grid_size = (int)sqrt(size); // sqrt of number of processes
+    int block_size = MATRIX_SIZE/grid_size;
+
     // Create 2D Cartesian topology
-    int dims[2] = {GRID_SIZE, GRID_SIZE};
+    int dims[2] = {grid_size, grid_size};
     int periods[2] = {1, 1};
     int coords[2];
     MPI_Comm cart_comm;
@@ -65,7 +69,7 @@ int main(int argc, char **argv) {
     MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, 1, &cart_comm);
     MPI_Cart_coords(cart_comm, rank, 2, coords);
 
-    int block_elements = BLOCK_SIZE * BLOCK_SIZE;
+    int block_elements = block_size * block_size;
     int *local_A = (int *)calloc(block_elements, sizeof(int));
     int *local_B = (int *)calloc(block_elements, sizeof(int));
     int *local_C = (int *)calloc(block_elements, sizeof(int));
@@ -95,7 +99,7 @@ int main(int argc, char **argv) {
     MPI_Datatype block_type;
     MPI_Datatype temp_type;
     
-    MPI_Type_vector(BLOCK_SIZE, BLOCK_SIZE, MATRIX_SIZE, MPI_INT, &temp_type);
+    MPI_Type_vector(block_size, block_size, MATRIX_SIZE, MPI_INT, &temp_type);
     MPI_Type_create_resized(temp_type, 0, sizeof(int), &block_type);
     MPI_Type_commit(&block_type);
 
@@ -107,10 +111,10 @@ int main(int argc, char **argv) {
         sendcounts = (int *)malloc(size * sizeof(int));
         displs = (int *)malloc(size * sizeof(int));
         
-        for (int i = 0; i < GRID_SIZE; i++) {
-            for (int j = 0; j < GRID_SIZE; j++) {
-                sendcounts[i * GRID_SIZE + j] = 1;
-                displs[i * GRID_SIZE + j] = i * MATRIX_SIZE * BLOCK_SIZE + j * BLOCK_SIZE;
+        for (int i = 0; i < grid_size; i++) {
+            for (int j = 0; j < grid_size; j++) {
+                sendcounts[i * grid_size + j] = 1;
+                displs[i * grid_size + j] = i * MATRIX_SIZE * block_size + j * block_size;
             }
         }
     }
@@ -123,8 +127,8 @@ int main(int argc, char **argv) {
     MPI_Comm_split(cart_comm, coords[0], coords[1], &row_comm);
 
     // Main alghoritm code
-    for (int stage = 0; stage < GRID_SIZE; stage++) {
-        int bcast_coord = (coords[0] + stage) % GRID_SIZE;
+    for (int stage = 0; stage < grid_size; stage++) {
+        int bcast_coord = (coords[0] + stage) % grid_size;
         
         // Broadcast A blocks along rows
         if (coords[1] == bcast_coord) {
@@ -133,7 +137,7 @@ int main(int argc, char **argv) {
         MPI_Bcast(temp_A, block_elements, MPI_INT, bcast_coord, row_comm);
 
         // Multiply blocks
-        multiply_blocks(temp_A, local_B, local_C, BLOCK_SIZE);
+        multiply_blocks(temp_A, local_B, local_C, block_size);
 
         // Shift B blocks up by one
         int src, dest;
@@ -148,7 +152,7 @@ int main(int argc, char **argv) {
     // Print result
     if (rank == 0) {
         print_matrix(C, MATRIX_SIZE * MATRIX_SIZE, "Result Matrix C");
-        printf("Total time: %lf", endTime - startTime);
+        printf("Total time: %.2lf ", endTime - startTime);
         free(A);
         free(B);
         free(C);
