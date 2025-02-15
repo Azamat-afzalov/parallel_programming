@@ -8,17 +8,20 @@
 SOURCE_FILE="mpi_taskB.c"
 
 # Define an array of MATRIX_SIZE values
-MATRIX_SIZES=(800 2000 4000 6000 8000)
-# MATRIX_SIZES=(8000)
-NUM_PROCESSES=(64, 361)
+# MATRIX_SIZES=(800 2000 4000 6000 8000)
+# # MATRIX_SIZES=(8000)
+# NUM_PROCESSES=(64, 361)
 
-for SIZE in "${MATRIX_SIZES[@]}"; do
-    for NP in "${NUM_PROCESSES[@]}"; do
-        EXECUTABLE="mpi_taskB_${SIZE}_${NP}"
+# for SIZE in "${MATRIX_SIZES[@]}"; do
+#     for NP in "${NUM_PROCESSES[@]}"; do
+#         EXECUTABLE="mpi_taskB_${SIZE}_${NP}"
         
-        echo "Running (MATRIX_SIZE=$SIZE - np=$NP)"
-        mpicc -o $EXECUTABLE -D MATRIX_SIZE=$SIZE -D PRINT=false $SOURCE_FILE -lm
-        mpirun -np $NP ./$EXECUTABLE
-        echo "\n"
-    done
-done
+#         echo "Running (MATRIX_SIZE=$SIZE - np=$NP)"
+#         mpicc -o $EXECUTABLE -D MATRIX_SIZE=$SIZE -D PRINT=false $SOURCE_FILE -lm
+#         mpirun -np $NP ./$EXECUTABLE
+#         echo "\n"
+#     done
+# done
+
+mpicc -o mpi_task_b -D MATRIX_SIZE=800 -D PRINT=false $SOURCE_FILE -lm
+mpirun -np 361 ./$EXECUTABLE
