@@ -16,7 +16,7 @@ for SIZE in "${MATRIX_SIZES[@]}"; do
         EXECUTABLE="mpi_taskB_${SIZE}_${NP}"
         
         echo "Running (MATRIX_SIZE=$SIZE - np=$NP)"
-        mpicc -o $EXECUTABLE -D MATRIX_SIZE=$SIZE -D PRINT=false $SOURCE_FILE
+        mpicc -o $EXECUTABLE -D MATRIX_SIZE=$SIZE -D PRINT=false $SOURCE_FILE -lm
         mpirun -np $NP ./$EXECUTABLE
         echo "\n"
     done
