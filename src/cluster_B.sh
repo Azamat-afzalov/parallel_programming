@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 #SBATCH --partition=all
-#SBATCH --ntasks=64
+#SBATCH --ntasks=361
 #SBATCH --job-name=my_job_name                                                                                          
 #SBATCH --output=test_result.log                                                                                        
 #SBATCH --time=00:10:00                                                                                                                                                                                                                                                                                                                                                 
 SOURCE_FILE="mpi_taskB.c"                                                                                                                                                                                                                          
 EXECUTABLE="mpi_task_b"
 
-echo "(800 - 64): \n"
-mpicc -o $EXECUTABLE -D MATRIX_SIZE=800 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
-mpirun -np 64 ./$EXECUTABLE
-echo "\n"
-# echo "(800 - 361): \n"
+# echo "(800 - 64): \n"
 # mpicc -o $EXECUTABLE -D MATRIX_SIZE=800 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
-# mpirun -np 361 ./$EXECUTABLE
+# mpirun -np 64 ./$EXECUTABLE
 # echo "\n"
+echo "(800 - 361): \n"
+mpicc -o $EXECUTABLE -D MATRIX_SIZE=800 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
+mpirun -np 361 ./$EXECUTABLE
+echo "\n"
 # echo "(2000 - 64): \n"
 # mpicc -o $EXECUTABLE -D MATRIX_SIZE=2000 -D PRINT=false $SOURCE_FILE                                                                                                                                                                                 
 # mpirun -np 64 ./$EXECUTABLE
