@@ -176,8 +176,8 @@ int main(int argc, char **argv) {
             }
         }
 
-        printf("\nResult Matrix C:\n");
-        print_matrix(C_full, MATRIX_SIZE);
+        // printf("\nResult Matrix C:\n");
+        // print_matrix(C_full, MATRIX_SIZE);
         printf("\nTime: %.4f seconds\n", end - start);
     }
 
